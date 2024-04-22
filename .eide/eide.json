@@ -1,0 +1,285 @@
+{
+  "name": "STM32F103",
+  "type": "ARM",
+  "dependenceList": [
+    {
+      "groupName": "STM32F1xx_DFP",
+      "depList": [
+        {
+          "name": "StdPeriphDrivers.EXTI",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.EXTI"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.EXTI"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.GPIO",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.GPIO"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.GPIO"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.PWR",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.PWR"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.PWR"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.RCC",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.RCC"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.RCC"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.Framework",
+          "incList": [
+            ".pack/Keil/STM32F1xx_DFP.2.4.1/Device/StdPeriph_Driver/inc",
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.Framework"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.Framework"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.USART",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.USART"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.USART"
+          ],
+          "libList": [],
+          "defineList": []
+        },
+        {
+          "name": "StdPeriphDrivers.FSMC",
+          "incList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.FSMC"
+          ],
+          "sourceDirList": [
+            ".eide/deps/STM32F1xx_DFP/StdPeriphDrivers.FSMC"
+          ],
+          "libList": [],
+          "defineList": []
+        }
+      ]
+    }
+  ],
+  "srcDirs": [
+    ".eide/deps",
+    "APP",
+    "SYSTEM",
+    "Tasks"
+  ],
+  "virtualFolder": {
+    "name": "<virtual_root>",
+    "files": [],
+    "folders": [
+      {
+        "name": "Board",
+        "files": [
+          {
+            "path": "Board/stm32f103_atk_elite/board_com.c"
+          },
+          {
+            "path": "Board/stm32f103_atk_elite/board_key.c"
+          },
+          {
+            "path": "Board/stm32f103_atk_elite/board_lcd.c"
+          },
+          {
+            "path": "Board/stm32f103_atk_elite/board_led.c"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "BSP",
+        "files": [],
+        "folders": [
+          {
+            "name": "COM",
+            "files": [
+              {
+                "path": "BSP/COM/com_drv.c"
+              }
+            ],
+            "folders": []
+          },
+          {
+            "name": "KEY",
+            "files": [
+              {
+                "path": "BSP/KEY/key_drv.c"
+              }
+            ],
+            "folders": []
+          },
+          {
+            "name": "LCD",
+            "files": [
+              {
+                "path": "BSP/LCD/lcd.c"
+              }
+            ],
+            "folders": []
+          },
+          {
+            "name": "LED",
+            "files": [
+              {
+                "path": "BSP/LED/led_drv.c"
+              }
+            ],
+            "folders": []
+          }
+        ]
+      },
+      {
+        "name": "FreeRTOS",
+        "files": [
+          {
+            "path": "FreeRTOS/croutine.c"
+          },
+          {
+            "path": "FreeRTOS/event_groups.c"
+          },
+          {
+            "path": "FreeRTOS/list.c"
+          },
+          {
+            "path": "FreeRTOS/queue.c"
+          },
+          {
+            "path": "FreeRTOS/stream_buffer.c"
+          },
+          {
+            "path": "FreeRTOS/tasks.c"
+          },
+          {
+            "path": "FreeRTOS/timers.c"
+          }
+        ],
+        "folders": [
+          {
+            "name": "MemMang",
+            "files": [
+              {
+                "path": "FreeRTOS/portable/MemMang/heap_4.c"
+              }
+            ],
+            "folders": []
+          },
+          {
+            "name": "portable",
+            "files": [
+              {
+                "path": "FreeRTOS/portable/GCC/ARM_CM3/port.c"
+              }
+            ],
+            "folders": []
+          }
+        ]
+      }
+    ]
+  },
+  "outDir": "build",
+  "deviceName": "STM32F103ZE",
+  "packDir": ".pack/Keil/STM32F1xx_DFP.2.4.1",
+  "miscInfo": {
+    "uid": "43f46139542f550a71bdfb70ace5f0d5"
+  },
+  "targets": {
+    "Debug": {
+      "excludeList": [
+        "<virtual_root>/CMSIS/startup_gd32e50x_hd.s"
+      ],
+      "toolchain": "GCC",
+      "compileConfig": {
+        "cpuType": "Cortex-M3",
+        "floatingPointHardware": "none",
+        "scatterFilePath": "./STM32F103_Flash.lds",
+        "useCustomScatterFile": true,
+        "storageLayout": {
+          "RAM": [],
+          "ROM": []
+        },
+        "options": "null"
+      },
+      "uploader": "OpenOCD",
+      "uploadConfig": {
+        "bin": "",
+        "target": "stm32f1x",
+        "interface": "cmsis-dap",
+        "baseAddr": "0x08000000"
+      },
+      "uploadConfigMap": {
+        "JLink": {
+          "bin": "",
+          "baseAddr": "",
+          "cpuInfo": {
+            "vendor": "null",
+            "cpuName": "null"
+          },
+          "proType": 1,
+          "speed": 8000,
+          "otherCmds": ""
+        },
+        "OpenOCD": {
+          "bin": "",
+          "target": "stm32f1x",
+          "interface": "cmsis-dap",
+          "baseAddr": "0x08000000"
+        }
+      },
+      "custom_dep": {
+        "name": "default",
+        "incList": [
+          ".eide/deps",
+          "APP",
+          "FreeRTOS/include",
+          "FreeRTOS",
+          "FreeRTOS/portable/GCC/ARM_CM3",
+          "CMSIS",
+          "CMSIS/ST/STM32F10x",
+          "BSP/KEY",
+          "Board",
+          "BSP/LED",
+          "BSP/LCD",
+          "SYSTEM/delay",
+          "Board/stm32f103_atk_elite",
+          "BSP/COM",
+          "Tasks/key_scan"
+        ],
+        "libList": [],
+        "sourceDirList": [],
+        "defineList": [
+          "USE_STDPERIPH_DRIVER",
+          "STM32F10X_HD"
+        ]
+      }
+    }
+  },
+  "version": "3.3"
+}

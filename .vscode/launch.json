@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "openocd",
+            "servertype": "openocd",
+            "executable": "build\\Debug\\STM32F103.elf",
+            "runToEntryPoint": "main",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "toolchainPrefix": "arm-none-eabi",
+            "svdFile": ".pack/Keil/STM32F1xx_DFP.2.4.1/SVD/STM32F103xx.svd"
+        }
+    ]
+}
