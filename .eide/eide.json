@@ -97,70 +97,19 @@
     "files": [],
     "folders": [
       {
-        "name": "Board",
+        "name": "Drivers",
         "files": [
           {
-            "path": "Board/stm32f103_atk_elite/board_com.c"
+            "path": "Drivers/src/com_drv.c"
           },
           {
-            "path": "Board/stm32f103_atk_elite/board_key.c"
+            "path": "Drivers/src/key_drv.c"
           },
           {
-            "path": "Board/stm32f103_atk_elite/board_led.c"
+            "path": "Drivers/src/led_drv.c"
           }
         ],
         "folders": []
-      },
-      {
-        "name": "BSP",
-        "files": [],
-        "folders": [
-          {
-            "name": "COM",
-            "files": [
-              {
-                "path": "BSP/COM/com_drv.c"
-              }
-            ],
-            "folders": []
-          },
-          {
-            "name": "KEY",
-            "files": [
-              {
-                "path": "BSP/KEY/key_drv.c"
-              }
-            ],
-            "folders": []
-          },
-          {
-            "name": "LCD",
-            "files": [
-              {
-                "path": "BSP/LCD/lcd.c"
-              }
-            ],
-            "folders": []
-          },
-          {
-            "name": "LED",
-            "files": [
-              {
-                "path": "BSP/LED/led_drv.c"
-              }
-            ],
-            "folders": []
-          },
-          {
-            "name": "SYN6288",
-            "files": [
-              {
-                "path": "BSP/SYN6288/SYN6288.c"
-              }
-            ],
-            "folders": []
-          }
-        ]
       },
       {
         "name": "FreeRTOS",
@@ -207,6 +156,24 @@
             "folders": []
           }
         ]
+      },
+      {
+        "name": "Periphs",
+        "files": [
+          {
+            "path": "Periphs/src/board_com.c"
+          },
+          {
+            "path": "Periphs/src/board_key.c"
+          },
+          {
+            "path": "Periphs/src/board_led.c"
+          },
+          {
+            "path": "Periphs/src/sg90.c"
+          }
+        ],
+        "folders": []
       }
     ]
   },
@@ -270,16 +237,12 @@
           "FreeRTOS/portable/GCC/ARM_CM3",
           "CMSIS",
           "CMSIS/ST/STM32F10x",
-          "BSP/KEY",
-          "Board",
-          "BSP/LED",
-          "BSP/LCD",
           "SYSTEM/delay",
-          "Board/stm32f103_atk_elite",
-          "BSP/COM",
           "Tasks/key_scan",
-          "BSP/SYN6288",
-          "Tasks"
+          "Tasks",
+          "Periphs",
+          "Drivers/inc",
+          "Periphs/inc"
         ],
         "libList": [],
         "sourceDirList": [],
