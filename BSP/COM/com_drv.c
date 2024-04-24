@@ -32,61 +32,56 @@
 
 //////////////////////////////////////////////////////////////////
 extern struct com_type** com_cfgs;
-static uint8_t com_idex = 0;
-
-//重定义fputc函数 
-/* retarget the C library printf function to the USART */
-int _write (int fd, char *pBuffer, int size)  
-{  
-    for (int i = 0; i < size; i++)  
-    {  
-		USART_SendData(com_cfgs[com_idex]->usart, (uint8_t)pBuffer[i]);
-		while(RESET == USART_GetFlagStatus(com_cfgs[com_idex]->usart, USART_FLAG_TC));		
-    }  
-    return size;  
-}
 
 //串口1中断服务程序
 //注意,读取USARTx->SR能避免莫名其妙的错误   	
-uint8_t USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
+uint8_t USART1_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 //接收状态
 //bit15，	接收完成标志
 //bit14，	接收到0x0d
 //bit13~0，	接收到的有效字节数目
-uint16_t USART_RX_STA=0;       //接收状态标记	  
+uint16_t USART1_RX_STA=0;       //接收状态标记
+
+//串口1中断服务程序
+//注意,读取USARTx->SR能避免莫名其妙的错误   	
+uint8_t USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
+//接收状态
+//bit15，	接收完成标志
+//bit14，	接收到0x0d
+//bit13~0，	接收到的有效字节数目
+uint16_t USART2_RX_STA=0;       //接收状态标记
 
 void com_init(uint8_t index, uint32_t bound)
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
 
-    com_idex = index;
     /* enable GPIO clock */
-    RCC_APB2PeriphClockCmd(com_cfgs[com_idex]->gpio_clk, ENABLE);
+    RCC_APB2PeriphClockCmd(com_cfgs[index]->gpio_clk, ENABLE);
 
     /* enable USART clock */
-    RCC_APB2PeriphClockCmd(com_cfgs[com_idex]->usart_clk, ENABLE);
+    RCC_APB2PeriphClockCmd(com_cfgs[index]->usart_clk, ENABLE);
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);
     /* connect port to USARTx_Tx */
-    GPIO_InitStructure.GPIO_Pin = com_cfgs[com_idex]->tx_pin;
+    GPIO_InitStructure.GPIO_Pin = com_cfgs[index]->tx_pin;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(com_cfgs[com_idex]->gpio_port, &GPIO_InitStructure);
+    GPIO_Init(com_cfgs[index]->gpio_port, &GPIO_InitStructure);
 
     /* connect port to USARTx_Rx */
-    GPIO_InitStructure.GPIO_Pin = com_cfgs[com_idex]->rx_pin;
+    GPIO_InitStructure.GPIO_Pin = com_cfgs[index]->rx_pin;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(com_cfgs[com_idex]->gpio_port, &GPIO_InitStructure);
+    GPIO_Init(com_cfgs[index]->gpio_port, &GPIO_InitStructure);
 
     /* USART configure */
-    com_cfgs[com_idex]->usart_cfg.USART_BaudRate = bound;
-    USART_Init(com_cfgs[com_idex]->usart, &com_cfgs[com_idex]->usart_cfg); //初始化串口
+    com_cfgs[index]->usart_cfg.USART_BaudRate = bound;
+    USART_Init(com_cfgs[index]->usart, &com_cfgs[index]->usart_cfg); //初始化串口
 
     //Usart1 NVIC 配置
-    NVIC_Init(&com_cfgs[com_idex]->com_nvic);	//根据指定的参数初始化VIC寄存器
+    NVIC_Init(&com_cfgs[index]->com_nvic);	//根据指定的参数初始化VIC寄存器
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);//开启串口接受中断
 
-    USART_Cmd(com_cfgs[com_idex]->usart, ENABLE);
+    USART_Cmd(com_cfgs[index]->usart, ENABLE);
 }
 
 
@@ -100,23 +95,23 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
     {
         Res =USART_ReceiveData(USART1);	//读取接收到的数据
         
-        if((USART_RX_STA&0x8000)==0)//接收未完成
+        if((USART1_RX_STA&0x8000)==0)//接收未完成
         {
-            if(USART_RX_STA&0x4000)//接收到了0x0d
+            if(USART1_RX_STA&0x4000)//接收到了0x0d
             {
-                if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
-                else USART_RX_STA|=0x8000;	//接收完成了 
+                if(Res!=0x0a)USART1_RX_STA=0;//接收错误,重新开始
+                else USART1_RX_STA|=0x8000;	//接收完成了 
             }
             else //还没收到0X0D
             {	
                 if(Res==0x0d)
-                    USART_RX_STA|=0x4000;
+                    USART1_RX_STA|=0x4000;
                 else
                 {
-                    USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-                    USART_RX_STA++;
-                    if(USART_RX_STA>(USART_REC_LEN-1))
-                        USART_RX_STA=0;//接收数据错误,重新开始接收	  
+                    USART1_RX_BUF[USART1_RX_STA&0X3FFF]=Res ;
+                    USART1_RX_STA++;
+                    if(USART1_RX_STA>(USART_REC_LEN-1))
+                        USART1_RX_STA=0;//接收数据错误,重新开始接收	  
                 }
             }
         }
@@ -126,3 +121,38 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
   // #endif
 }
 
+void USART2_IRQHandler(void)                	//串口1中断服务程序
+	{
+	uint8_t Res;
+// #if SYSTEM_SUPPORT_OS 		//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
+// 	OSIntEnter();
+// #endif
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾\r\n)
+    {
+        Res =USART_ReceiveData(USART2);	//读取接收到的数据
+
+        if((USART2_RX_STA&0x8000)==0)//接收未完成
+        {
+            if(USART2_RX_STA&0x4000)//接收到了0x0d
+            {
+                if(Res!=0x0a)USART2_RX_STA=0;//接收错误,重新开始
+                else USART2_RX_STA|=0x8000;	//接收完成了 
+            }
+            else //还没收到0X0D
+            {	
+                if(Res==0x0d)
+                    USART2_RX_STA|=0x4000;
+                else
+                {
+                    USART2_RX_BUF[USART2_RX_STA&0X3FFF]=Res ;
+                    USART2_RX_STA++;
+                    if(USART2_RX_STA>(USART_REC_LEN-1))
+                        USART2_RX_STA=0;//接收数据错误,重新开始接收	  
+                }
+            }
+        }
+    }
+  // #if SYSTEM_SUPPORT_OS 	//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
+  // 	OSIntExit();  											 
+  // #endif
+}

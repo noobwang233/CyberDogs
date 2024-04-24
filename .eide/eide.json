@@ -106,9 +106,6 @@
             "path": "Board/stm32f103_atk_elite/board_key.c"
           },
           {
-            "path": "Board/stm32f103_atk_elite/board_lcd.c"
-          },
-          {
             "path": "Board/stm32f103_atk_elite/board_led.c"
           }
         ],
@@ -150,6 +147,15 @@
             "files": [
               {
                 "path": "BSP/LED/led_drv.c"
+              }
+            ],
+            "folders": []
+          },
+          {
+            "name": "SYN6288",
+            "files": [
+              {
+                "path": "BSP/SYN6288/SYN6288.c"
               }
             ],
             "folders": []
@@ -213,7 +219,8 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "<virtual_root>/CMSIS/startup_gd32e50x_hd.s"
+        "<virtual_root>/CMSIS/startup_gd32e50x_hd.s",
+        "<virtual_root>/BSP/SYN6288"
       ],
       "toolchain": "GCC",
       "compileConfig": {
@@ -270,7 +277,9 @@
           "SYSTEM/delay",
           "Board/stm32f103_atk_elite",
           "BSP/COM",
-          "Tasks/key_scan"
+          "Tasks/key_scan",
+          "BSP/SYN6288",
+          "Tasks"
         ],
         "libList": [],
         "sourceDirList": [],

@@ -18,5 +18,11 @@ CompileFlags:
         - -Ie:\wt\softwaretools\gcc\10 2021.10\lib\gcc\arm-none-eabi\10.3.1\include
         - -Ie:\wt\softwaretools\gcc\10 2021.10\lib\gcc\arm-none-eabi\10.3.1\include-fixed
         - -Ie:\wt\softwaretools\gcc\10 2021.10\arm-none-eabi\include
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\arm-none-eabi\include\c++\10.3.1
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\arm-none-eabi\include\c++\10.3.1\arm-none-eabi
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\arm-none-eabi\include\c++\10.3.1\backward
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\lib\gcc\arm-none-eabi\10.3.1\include
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\lib\gcc\arm-none-eabi\10.3.1\include-fixed
+        - -Ic:\program files (x86)\gnu arm embedded toolchain\10 2021.10\arm-none-eabi\include
     CompilationDatabase: ./build/Debug
-    Compiler: e:\wt\SoftwareTools\GCC\10 2021.10\bin\arm-none-eabi-gcc.exe
+    Compiler: C:\Program Files (x86)\GNU Arm Embedded Toolchain\10 2021.10\bin\arm-none-eabi-gcc.exe

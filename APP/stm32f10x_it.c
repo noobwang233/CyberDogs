@@ -24,7 +24,6 @@
 #include "stm32f10x_it.h"
 #include "stdio.h"
 #include <stdint.h>
-#include "board_periph.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -72,7 +71,6 @@ void HardFault_Handler(void)
     while(t<5)
     {
         t++;
-        led_toggle(LED0);
         //BEEP=!BEEP;
         for(i=0;i<0X1FFFFF;i++);
     }

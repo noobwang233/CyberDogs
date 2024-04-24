@@ -10,12 +10,16 @@ extern struct led_init_type** led_cfgs;
 */
 void  led_init (uint8_t led_num)
 {
+    GPIO_InitTypeDef led_init;
+    led_init.GPIO_Mode = GPIO_Mode_Out_PP;
+    led_init.GPIO_Speed = GPIO_Speed_50MHz;
+    led_init.GPIO_Pin = led_cfgs[led_num]->pin;
     /* enable the led clock */
     RCC_APB2PeriphClockCmd(led_cfgs[led_num]->gpio_clk, ENABLE);
     /* configure led GPIO port */ 
-    GPIO_Init(led_cfgs[led_num]->gpio_port, &led_cfgs[led_num]->gpio_type);
+    GPIO_Init(led_cfgs[led_num]->gpio_port, &led_init);
 
-    GPIO_ResetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->gpio_type.GPIO_Pin);
+    GPIO_ResetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->pin);
 }
 
 /*!
@@ -27,7 +31,7 @@ void  led_init (uint8_t led_num)
 */
 void led_on(uint8_t led_num)
 {
-    GPIO_SetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->gpio_type.GPIO_Pin);
+    GPIO_SetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->pin);
 }
 
 /*!
@@ -39,7 +43,7 @@ void led_on(uint8_t led_num)
 */
 void led_off(uint8_t led_num)
 {
-    GPIO_ResetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->gpio_type.GPIO_Pin);
+    GPIO_ResetBits(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->pin);
 }
 
 /*!
@@ -51,6 +55,6 @@ void led_off(uint8_t led_num)
 */
 void led_toggle(uint8_t led_num)
 {
-    uint8_t led_state = GPIO_ReadOutputDataBit(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->gpio_type.GPIO_Pin);
-    GPIO_WriteBit(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->gpio_type.GPIO_Pin, !led_state);
+    uint8_t led_state = GPIO_ReadOutputDataBit(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->pin);
+    GPIO_WriteBit(led_cfgs[led_num]->gpio_port, led_cfgs[led_num]->pin, !led_state);
 }

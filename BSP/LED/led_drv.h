@@ -7,7 +7,7 @@
 /* eval board low layer led */
 struct led_init_type
 {
-    GPIO_InitTypeDef    gpio_type;
+    uint16_t   pin;
     GPIO_TypeDef *      gpio_port;
     uint32_t            gpio_clk;
 };

@@ -1,12 +1,10 @@
-#include "stm32f10x.h"
-#include "board_periph.h"
+#include "periphs.h"
 #include <stdio.h>
 #include "delay.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "lcd.h"
-
-#include "task_key_scan.h"
+#include "mytasks.h"
+#include "main.h"
 
 TaskHandle_t LED0_Task_Handle = NULL; /* 任务句柄 */
 TaskHandle_t LED1_Task_Handle = NULL;
@@ -25,18 +23,18 @@ static void LED_Task(void* parameter)
     }
 }
 
-static void LCD_Task(void* parameter)
-{
-    uint8_t t = ' ';
-    while (1)
-    {
-        if(t > 'Z')
-            t = ' ';
-        LCD_ShowChar(10,10,t,24,0);
-        vTaskDelay(pdMS_TO_TICKS(1000)); /* 延时1s */
-        t++;
-    }
-}
+// static void LCD_Task(void* parameter)
+// {
+//     uint8_t t = ' ';
+//     while (1)
+//     {
+//         if(t > 'Z')
+//             t = ' ';
+//         LCD_ShowChar(10,10,t,24,0);
+//         vTaskDelay(pdMS_TO_TICKS(10000)); /* 延时10s */
+//         t++;
+//     }
+// }
 
 static void TaskCreate_Task(void* parameter)
 {
@@ -55,12 +53,12 @@ static void TaskCreate_Task(void* parameter)
                                 (void* )LED1, /* 任务入口函数参数 */
                                 (UBaseType_t )2, /* 任务的优先级 */
                                 (TaskHandle_t* )&LED1_Task_Handle)/* 任务句柄指针 */);
-    configASSERT(xTaskCreate(   (TaskFunction_t )LCD_Task, /* 任务入口函数 */
-                                (const char* )"LCD_Task",/* 任务名字 */
-                                (uint16_t )128, /* 任务栈大小 */
-                                (void* )NULL, /* 任务入口函数参数 */
-                                (UBaseType_t )2, /* 任务的优先级 */
-                                (TaskHandle_t* )&LCD_Task_Handle)/* 任务句柄指针 */);
+    // configASSERT(xTaskCreate(   (TaskFunction_t )LCD_Task, /* 任务入口函数 */
+    //                             (const char* )"LCD_Task",/* 任务名字 */
+    //                             (uint16_t )128, /* 任务栈大小 */
+    //                             (void* )NULL, /* 任务入口函数参数 */
+    //                             (UBaseType_t )2, /* 任务的优先级 */
+    //                             (TaskHandle_t* )&LCD_Task_Handle)/* 任务句柄指针 */);
     // configASSERT(xTaskCreate(   (TaskFunction_t )LED_Task, /* 任务入口函数 */
     //                             (const char* )"BEEP_Task",/* 任务名字 */
     //                             (uint16_t )128, /* 任务栈大小 */
@@ -88,7 +86,6 @@ int main()
     key_init(KEY_1, KEY_MODE_GPIO);
     key_init(KEY_UP, KEY_MODE_GPIO);
     com_init(COM_IDEX,115200);
-    LCD_Init();
     xReturn = xTaskCreate(  (TaskFunction_t )TaskCreate_Task, /* 任务入口函数 */
                                 (const char* )"TaskCreate_Task",/* 任务名字 */
                             (uint16_t )256, /* 任务栈大小 */

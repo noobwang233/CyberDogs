@@ -6,12 +6,15 @@
 #endif
 
 #include "com_drv.h"
+#include "main.h"
 
-#define COMn                             1U
-#define COM_IDEX                         0u
+
+#define COMn                             2U
+
 typedef enum 
 {
     COM_0 = 0,          //USART1
+    COM_1 = 0,          //USART2
 } com_index;
 
 /* exported types */
