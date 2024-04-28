@@ -1,0 +1,86 @@
+{
+  "name": "STM32F103ZET6",
+  "type": "ARM",
+  "dependenceList": [],
+  "srcDirs": [
+    ".eide/deps",
+    "../Core",
+    "../Drivers"
+  ],
+  "virtualFolder": {
+    "name": "<virtual_root>",
+    "files": [],
+    "folders": [
+      {
+        "name": "Startup",
+        "files": [
+          {
+            "path": "startup_stm32f103xe.s"
+          }
+        ],
+        "folders": []
+      }
+    ]
+  },
+  "outDir": "build",
+  "deviceName": null,
+  "packDir": null,
+  "miscInfo": {
+    "uid": "b989ffa2ba2878eb1dcce3acce7eb851"
+  },
+  "targets": {
+    "Debug": {
+      "excludeList": [],
+      "toolchain": "GCC",
+      "compileConfig": {
+        "cpuType": "Cortex-M3",
+        "floatingPointHardware": "none",
+        "scatterFilePath": "STM32F103ZETx_FLASH.ld",
+        "useCustomScatterFile": true,
+        "storageLayout": {
+          "RAM": [],
+          "ROM": []
+        },
+        "options": "null"
+      },
+      "uploader": "OpenOCD",
+      "uploadConfig": {
+        "bin": "",
+        "target": "stm32f1x",
+        "interface": "cmsis-dap",
+        "baseAddr": "0x08000000"
+      },
+      "uploadConfigMap": {
+        "JLink": {
+          "bin": "",
+          "baseAddr": "",
+          "cpuInfo": {
+            "vendor": "null",
+            "cpuName": "null"
+          },
+          "proType": 1,
+          "speed": 8000,
+          "otherCmds": ""
+        }
+      },
+      "custom_dep": {
+        "name": "default",
+        "incList": [
+          ".eide/deps",
+          "../Core/Inc",
+          "../Drivers/CMSIS/Include",
+          "../Drivers/CMSIS/Device/ST/STM32F1xx/Include",
+          "../Drivers/STM32F1xx_HAL_Driver/Inc",
+          "../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy"
+        ],
+        "libList": [],
+        "sourceDirList": [],
+        "defineList": [
+          "USE_HAL_DRIVER",
+          "STM32F103xE"
+        ]
+      }
+    }
+  },
+  "version": "3.3"
+}
