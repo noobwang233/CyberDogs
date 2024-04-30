@@ -23,16 +23,70 @@
  */
 #include "oled.h"
 #include "i2c.h"
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 
+
 // OLED器件地址
-#define OLED_ADDRESS 0x7A
+#define OLED_ADDRESS (0x3C << 1)
 
 // OLED参数
 #define OLED_PAGE 8            // OLED页数
 #define OLED_ROW 8 * OLED_PAGE // OLED行数
 #define OLED_COLUMN 128        // OLED列数
+
+#define OLED_COLUMN_OFFSET 2
+
+static void Column_set(unsigned char column);
+static void Page_set(unsigned char page);
+
+
+const unsigned char  OLED_init_cmd[]=			//SH1106
+{
+  
+  /*0xae,0X00,0X10,0x40,0X81,0XCF,0xff,0xa1,0xa4,
+  0xA6,0xc8,0xa8,0x3F,0xd5,0x80,0xd3,0x00,0XDA,0X12,
+  0x8d,0x14,0xdb,0x40,0X20,0X02,0xd9,0xf1,0xAF*/
+       0xAE,//关闭显示
+	
+       0xD5,//设置时钟分频因子,震荡频率
+       0x80,  //[3:0],分频因子;[7:4],震荡频率
+
+       0xA8,//设置驱动路数
+       0X3F,//默认(1/64)
+	
+       0xD3,//设置显示偏移
+       0X00,//默认为0
+	
+       0x40,//设置显示开始行 [5:0],行数.
+	
+       0x8D,//电荷泵设置
+       0x14,//bit2，开启/关闭
+       0x20,//设置内存地址模式
+       0x02,//[1:0],00，列地址模式;01，行地址模式;10,页地址模式;默认10;
+       0xA1,//段重定义设置,bit0:0,0->0;1,0->127;  A1
+	
+       0xC8,//设置COM扫描方向;bit3:0,普通模式;1,重定义模式 COM[N-1]->COM0;N:驱动路数 (C0 翻转显示) C8
+	   
+       0xDA,//设置COM硬件引脚配置
+       0x12,//[5:4]配置  
+	   
+       0x81,//对比度设置
+       0x66,//1~255;默认0X7F (亮度设置,越大越亮)
+	   
+       0xD9,//设置预充电周期
+       0xf1,//[3:0],PHASE 1;[7:4],PHASE 2;
+	   
+       0xDB,//设置VCOMH 电压倍率
+       0x30,//[6:4] 000,0.65*vcc;001,0.77*vcc;011,0.83*vcc;
+	   
+       0xA4,//全局显示开启;bit0:1,开启;0,关闭;(白屏/黑屏)
+	   
+       0xA6,//设置显示方式;bit0:1,反相显示;0,正常显示 
+       
+    //    0xAF,//开启显示     
+};
 
 // 显存
 uint8_t OLED_GRAM[OLED_PAGE][OLED_COLUMN];
@@ -66,51 +120,17 @@ void OLED_SendCmd(uint8_t cmd) {
  * @note 此函数是移植本驱动时的重要函数 将本驱动库移植到其他驱动芯片时应根据实际情况修改此函数
  */
 void OLED_Init() {
-  OLED_SendCmd(0xAE); /*关闭显示 display off*/
+    uint8_t i;
 
-  OLED_SendCmd(0x02); /*设置列起始地址 set lower column address*/
-  OLED_SendCmd(0x10); /*设置列结束地址 set higher column address*/
+    for(i = 0; i < (sizeof(OLED_init_cmd)/sizeof(OLED_init_cmd[0])); i++)
+    {
+        OLED_SendCmd(OLED_init_cmd[i]);
+    }
 
-  OLED_SendCmd(0x40); /*设置起始行 set display start line*/
+    OLED_NewFrame();
+    OLED_ShowFrame();
 
-  OLED_SendCmd(0xB0); /*设置页地址 set page address*/
-
-  OLED_SendCmd(0x81); /*设置对比度 contract control*/
-  OLED_SendCmd(0xCF); /*128*/
-
-  OLED_SendCmd(0xA1); /*设置分段重映射 从右到左 set segment remap*/
-
-  OLED_SendCmd(0xA6); /*正向显示 normal / reverse*/
-
-  OLED_SendCmd(0xA8); /*多路复用率 multiplex ratio*/
-  OLED_SendCmd(0x3F); /*duty = 1/64*/
-
-  OLED_SendCmd(0xAD); /*设置启动电荷泵 set charge pump enable*/
-  OLED_SendCmd(0x8B); /*启动DC-DC */
-
-  OLED_SendCmd(0x33); /*设置泵电压 set VPP 10V */
-
-  OLED_SendCmd(0xC8); /*设置输出扫描方向 COM[N-1]到COM[0] Com scan direction*/
-
-  OLED_SendCmd(0xD3); /*设置显示偏移 set display offset*/
-  OLED_SendCmd(0x00); /* 0x00 */
-
-  OLED_SendCmd(0xD5); /*设置内部时钟频率 set osc frequency*/
-  OLED_SendCmd(0xC0);
-
-  OLED_SendCmd(0xD9); /*设置放电/预充电时间 set pre-charge period*/
-  OLED_SendCmd(0x1F); /*0x22*/
-
-  OLED_SendCmd(0xDA); /*设置引脚布局 set COM pins*/
-  OLED_SendCmd(0x12);
-
-  OLED_SendCmd(0xDB); /*设置电平 set vcomh*/
-  OLED_SendCmd(0x40);
-
-  OLED_NewFrame();
-  OLED_ShowFrame();
-
-  OLED_SendCmd(0xAF); /*开启显示 display ON*/
+    OLED_SendCmd(0xAF); /*开启显示 display ON*/
 }
 
 /**
@@ -154,20 +174,30 @@ void OLED_NewFrame() {
   memset(OLED_GRAM, 0, sizeof(OLED_GRAM));
 }
 
+static void Column_set(unsigned char column)
+{
+	column += OLED_COLUMN_OFFSET;
+    OLED_SendCmd(0x10|(column>>4));    //设置列地址高位
+    OLED_SendCmd(0x00|(column&0x0f));   //设置列地址低位  
+}
+static void Page_set(unsigned char page)
+{
+    OLED_SendCmd(0xb0+page);
+}
+
 /**
  * @brief 将当前显存显示到屏幕上
  * @note 此函数是移植本驱动时的重要函数 将本驱动库移植到其他驱动芯片时应根据实际情况修改此函数
  */
 void OLED_ShowFrame() {
-  static uint8_t sendBuffer[OLED_COLUMN + 1];
-  sendBuffer[0] = 0x40;
-  for (uint8_t i = 0; i < OLED_PAGE; i++) {
-    OLED_SendCmd(0xB0 + i); // 设置页地址
-    OLED_SendCmd(0x02);     // 设置列地址低4位
-    OLED_SendCmd(0x10);     // 设置列地址高4位
-    memcpy(sendBuffer + 1, OLED_GRAM[i], OLED_COLUMN);
-    OLED_Send(sendBuffer, OLED_COLUMN + 1);
-  }
+    static uint8_t sendBuffer[OLED_COLUMN + 1];
+    sendBuffer[0] = 0x40;
+    for (uint8_t i = 0; i < OLED_PAGE; i++) {
+        Page_set(i); // 设置页地址
+        Column_set(0);
+        memcpy(sendBuffer + 1, OLED_GRAM[i], OLED_COLUMN);
+        OLED_Send(sendBuffer, OLED_COLUMN + 1);
+    }
 }
 
 /**
@@ -177,12 +207,12 @@ void OLED_ShowFrame() {
  * @param color 颜色
  */
 void OLED_SetPixel(uint8_t x, uint8_t y, OLED_ColorMode color) {
-  if (x >= OLED_COLUMN || y >= OLED_ROW) return;
-  if (!color) {
-    OLED_GRAM[y / 8][x] |= 1 << (y % 8);
-  } else {
-    OLED_GRAM[y / 8][x] &= ~(1 << (y % 8));
-  }
+    if (x >= OLED_COLUMN || y >= OLED_ROW) return;
+    if (!color) {
+        OLED_GRAM[y / 8][x] |= 1 << (y % 8);
+    } else {
+        OLED_GRAM[y / 8][x] &= ~(1 << (y % 8));
+    }
 }
 
 /**
@@ -665,4 +695,10 @@ void OLED_PrintString(uint8_t x, uint8_t y, char *str, const Font *font, OLED_Co
       }
     }
   }
+}
+void OLED_DrawBMP(unsigned char x0, unsigned char y0, unsigned char x1,
+    unsigned char y1, unsigned char BMP[]) {
+    OLED_NewFrame();
+    OLED_SetBlock(0, 0, (const uint8_t *)BMP, 128, 64, OLED_COLOR_NORMAL);
+    OLED_ShowFrame();
 }

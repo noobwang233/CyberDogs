@@ -26,6 +26,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "oled.h"
+#include "font.h"
+#include "bmp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,24 +42,71 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define move_delay 150 //
+#define move_delay_slow 300 //
+#define move_speed_fast 2 //
+#define move_speed 4 //
+#define move_speed_slow 7 //
+#define rest_time 30000U
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t move_mode = '0';
+uint8_t previous_mode = '0';
+uint8_t flag_tick = 1;
+uint32_t time_record = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void Rbt_Init(void);
+void Rbt_Init_Slow(void);
+uint16_t angle_to_CCR(uint8_t angle);
+uint8_t CCR_to_angle(uint16_t CCRR);
+uint16_t angle3_to_CCR(uint8_t angle);
+uint8_t CCR_to_angle3(uint16_t CCRR);
+//uint32_t time_record_now = 0;
+void move_forward(void);
+void move_behind(void);
+void move_right(void);
+void move_left(void);
+void move_swing(void);
+void move_stretch(void);
+void move_test(void);
+void move_sleep_w(void);
+void move_sleep_p(void);
+void move_two_hands(void);
+void lan_yao(void);
+void two_legs_down_in(void);
+void two_legs_down_out(void);
+void butt_up(void);
+void move_random();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	//重新设置中断
 
+	if (move_mode == 'f') {
+		//OLED_Clear();
+		OLED_DrawBMP(0, 0, 128, 8, BMP2); //前进
+	} else if (move_mode == 'b') {
+		OLED_DrawBMP(0, 0, 128, 8, BMP2); //后�??
+	} else if (move_mode == 'l') {
+		OLED_DrawBMP(0, 0, 128, 8, BMP4); //左转
+	} else if (move_mode == 'r') {
+		OLED_DrawBMP(0, 0, 128, 8, BMP3); //右转
+	} else if (move_mode == 'w') {
+		OLED_DrawBMP(0, 0, 128, 8, BMP_very_happy); //摇摆
+	}
+	time_record = HAL_GetTick();
+	flag_tick = 1;
+	HAL_UART_Receive_IT(&huart1, &move_mode, 1);
+}
 /* USER CODE END 0 */
 
 /**
@@ -89,21 +138,126 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_I2C1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  OLED_Init();
+    OLED_Init();
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); //前腿1
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); //前腿2
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+    HAL_UART_Receive_IT(&huart1, &move_mode, 1); //
+    OLED_DrawBMP(0, 0, 128, 8, BMP1); //立正
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+    while (1)
+    {
+		//HAL_Delay(1);
+		// time_record_now = HAL_GetTick() + 1000;
+		if (move_mode == 'f') { //前进
+			move_forward();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'b') { //后�??
+			move_behind();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'l') { //左转
+			move_left();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'r') { //右转
+			move_right();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'w') { //摇摆
+			move_swing();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == '5') { //立正
+			OLED_DrawBMP(0, 0, 128, 8, BMP1);
+			Rbt_Init();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'q' && previous_mode != '0') { //起身
+			Rbt_Init_Slow();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 's' && previous_mode != 's') { //坐下
+			Rbt_Init_Slow();
+			OLED_DrawBMP(0, 0, 128, 8, BMP2);
+			move_stretch();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_miao);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'j') { //交替抬手
+			Rbt_Init();  // 表情
+			move_two_hands();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'y') { //伸懒�?
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay_slow);
+			OLED_DrawBMP(0, 0, 128, 8, BMP_happy);
+			lan_yao();
+			OLED_DrawBMP(0, 0, 128, 8, BMP1);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '1') { //抬头
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay);
+			two_legs_down_in();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_tiao_pi);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '9') { //撅腚
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay);
+			OLED_DrawBMP(0, 0, 128, 8, BMP_mihu);
+			butt_up();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'p' && previous_mode != 'p') { //趴下睡觉
+			if (previous_mode != '5' && previous_mode != 'q') {
+				Rbt_Init_Slow();
+				HAL_Delay(move_delay_slow);
+			}
+			move_sleep_p();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_p);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '2' && previous_mode != '2') { //卧下睡觉
+			if (previous_mode != '5' && previous_mode != 'q') {
+				Rbt_Init_Slow();
+				HAL_Delay(move_delay_slow);
+			}
+			move_sleep_w();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_w);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if ((HAL_GetTick() + 1000) - time_record > rest_time) {
+			if(flag_tick == 1){
+				HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, GPIO_PIN_SET);
+				OLED_NewFrame();
+                OLED_ShowFrame();
+				flag_tick = 0;
+			}
+
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -147,7 +301,332 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+uint16_t angle_to_CCR(uint8_t angle) {
+	return angle * 2000 / 180 + 500;
+}
 
+uint8_t CCR_to_angle(uint16_t CCRR) {
+	return (CCRR - 500) * 180 / 2000;
+}
+
+uint16_t angle3_to_CCR(uint8_t angle) {
+	return angle * 2000 / 193 + 500;
+}
+
+uint8_t CCR_to_angle3(uint16_t CCRR) {
+	return (CCRR - 500) * 193 / 2000;
+}
+
+void Rbt_Init(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(100);
+}
+
+void Rbt_Init_Slow(void) {
+	if (previous_mode == '0')
+		return;
+	OLED_DrawBMP(0, 0, 128, 8, BMP1);
+	uint8_t angle_1, angle_2, angle_3, angle_4;
+	angle_1 = CCR_to_angle(TIM2->CCR1);
+	angle_3 = CCR_to_angle3(TIM2->CCR3);
+	angle_2 = CCR_to_angle(TIM2->CCR2);
+	angle_4 = CCR_to_angle(TIM2->CCR4);
+	while (angle_1 != 90 || angle_3 != 90 || angle_2 != 90 || angle_4 != 90) {
+		if (angle_1 > 90) {
+			--angle_1;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, angle_to_CCR(angle_1));
+		} else if (angle_1 < 90) {
+			++angle_1;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, angle_to_CCR(angle_1));
+		}
+		//
+		if (angle_3 > 90) {
+			--angle_3;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3,
+					angle3_to_CCR(angle_3));
+		} else if (angle_3 < 90) {
+			++angle_3;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3,
+					angle3_to_CCR(angle_3));
+		}
+		//
+		if (angle_2 > 90) {
+			--angle_2;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, angle_to_CCR(angle_2));
+		} else if (angle_2 < 90) {
+			++angle_2;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, angle_to_CCR(angle_2));
+		}
+		//
+		if (angle_4 > 90) {
+			--angle_4;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, angle_to_CCR(angle_4));
+		} else if (angle_4 < 90) {
+			++angle_4;
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, angle_to_CCR(angle_4));
+		}
+		HAL_Delay(move_speed_slow);
+	}
+
+}
+
+void move_forward(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+}
+
+void move_behind(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+}
+
+void move_right(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	HAL_Delay(move_delay);
+}
+
+void move_left(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(135));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(45));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	HAL_Delay(move_delay);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	HAL_Delay(move_delay);
+}
+
+void move_swing(void) {
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(45));
+	HAL_Delay(220);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(45));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(135));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(135));
+	HAL_Delay(220);
+}
+void move_stretch(void) {
+	if (TIM2->CCR1 < angle_to_CCR(155) && TIM2->CCR3 > angle3_to_CCR(25)) {
+		for (uint8_t i = 0; i < 70; i++) {
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i));
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i));
+			HAL_Delay(move_speed);
+		}
+		HAL_Delay(1000);
+		for (uint8_t i = 0; i < 70; i++) {
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(160-i));
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(20+i));
+			HAL_Delay(move_speed);
+		}
+		for (uint8_t i = 0; i < 65; i++) {
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i));
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i));
+			HAL_Delay(move_speed);
+		}
+		for (uint8_t i = 0; i < 20; i++) {
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i));
+			__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i));
+			HAL_Delay(move_speed);
+		}
+		HAL_Delay(1000);
+		for (uint8_t i = 1; i <= 60; i++) {
+					__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(70+i));
+					HAL_Delay(move_speed);
+				}
+		// __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135)); // 右前�? right front leg
+		HAL_Delay(1000);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(180));
+		HAL_Delay(500);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(130));
+		HAL_Delay(500);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(180));
+		HAL_Delay(500);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(130));
+		HAL_Delay(500);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(70));
+	}
+}
+
+void move_sleep_w(void) {
+
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i)); // 15   右前�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i)); // 165  左前�? right front leg
+		HAL_Delay(move_speed);
+	}
+
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i)); // 165 右后�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i)); // 15 左后�? right front leg
+		HAL_Delay(move_speed);
+	}
+
+}
+
+void move_sleep_p(void) {
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i)); // 165 右前�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i)); // 15 左前�? right front leg
+		HAL_Delay(move_speed);
+	}
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90-i)); // 15
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90+i)); // 165
+		HAL_Delay(move_speed);
+	}
+}
+
+void move_two_hands(void) {
+
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(20));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle3_to_CCR(20));
+	HAL_Delay(move_delay);
+
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle3_to_CCR(90));
+	HAL_Delay(move_delay);
+
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(160));
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(160));
+
+	HAL_Delay(move_delay);
+	for (uint8_t i = 1; i <= 90; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90));
+	}
+	HAL_Delay(move_delay);
+//	for (uint8_t i = 0; i < 90; i++) {
+//		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i));
+//		HAL_Delay(move_speed_fast / 2);
+//	}
+//	HAL_Delay(move_delay);
+//	for (uint8_t i = 1; i <= 90; i++) {
+//		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(i));
+//		HAL_Delay(move_speed_fast / 2);
+//	}
+//	HAL_Delay(move_delay);
+//	for (uint8_t i = 0; i < 90; i++) {
+//		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i));
+//		HAL_Delay(move_speed_fast / 2);
+//	}
+//	HAL_Delay(move_delay);
+//	for (uint8_t i = 1; i <= 90; i++) {
+//		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(180-i));
+//		HAL_Delay(move_speed_fast / 2);
+//	}
+//	HAL_Delay(move_delay);
+
+}
+
+void butt_up(void) { //撅腚
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i/3));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i/3));
+		HAL_Delay(move_speed);
+	}
+}
+
+void two_legs_down_in(void) { // 抬头 �?
+	for (uint8_t i = 0; i < 20; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i));
+		HAL_Delay(move_speed);
+	}
+	for (uint8_t i = 0; i < 65; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i));
+		HAL_Delay(move_speed);
+	}
+}
+
+void lan_yao(void) {
+	for (uint8_t i = 0; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i/2));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i/2));
+		HAL_Delay(move_speed + 1);
+	}
+
+	HAL_Delay(move_delay * 10);
+	for (uint8_t i = 1; i < 75; i++) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(165-i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(15+i));
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(127-i/2)); // 15
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(53+i/2)); // 165
+		HAL_Delay(move_speed);
+	}
+	HAL_Delay(move_delay);
+
+}
 /* USER CODE END 4 */
 
 /**
