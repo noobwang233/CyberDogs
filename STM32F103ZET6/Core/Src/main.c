@@ -89,19 +89,19 @@ void move_random();
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	//閲嶆柊璁剧疆涓柇
+	//重新设置中断
 
 	if (move_mode == 'f') {
 		//OLED_Clear();
-		OLED_DrawBMP(0, 0, 128, 8, BMP2); //鍓嶈繘
+		OLED_DrawBMP(0, 0, 128, 8, BMP2); //前进
 	} else if (move_mode == 'b') {
-		OLED_DrawBMP(0, 0, 128, 8, BMP2); //鍚庯拷??
+		OLED_DrawBMP(0, 0, 128, 8, BMP2); //后退
 	} else if (move_mode == 'l') {
-		OLED_DrawBMP(0, 0, 128, 8, BMP4); //宸﹁浆
+		OLED_DrawBMP(0, 0, 128, 8, BMP4); //左转
 	} else if (move_mode == 'r') {
-		OLED_DrawBMP(0, 0, 128, 8, BMP3); //鍙宠浆
+		OLED_DrawBMP(0, 0, 128, 8, BMP3); //右转
 	} else if (move_mode == 'w') {
-		OLED_DrawBMP(0, 0, 128, 8, BMP_very_happy); //鎽囨憜
+		OLED_DrawBMP(0, 0, 128, 8, BMP_very_happy); //摇摆
 	}
 	time_record = HAL_GetTick();
 	flag_tick = 1;
@@ -143,12 +143,12 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
     OLED_Init();
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); //鍓嶈吙1
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); //鍓嶈吙2
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-    HAL_UART_Receive_IT(&huart1, &move_mode, 1); //
-    OLED_DrawBMP(0, 0, 128, 8, BMP1); //绔嬫
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); //前腿1
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); //前腿2
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+	HAL_UART_Receive_IT(&huart1, &move_mode, 1); //
+	OLED_DrawBMP(0, 0, 128, 8, BMP1); //立正
     uint8_t i=0;
   /* USER CODE END 2 */
 
@@ -163,108 +163,110 @@ int main(void)
         __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, angle_to_CCR(i));
 		HAL_Delay(10000);
         i++;
+		//HAL_Delay(1);
 		// time_record_now = HAL_GetTick() + 1000;
-		// if (move_mode == 'f') { //鍓嶈繘
-		// 	move_forward();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// } else if (move_mode == 'b') { //鍚庯拷??
-		// 	move_behind();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// } else if (move_mode == 'l') { //宸﹁浆
-		// 	move_left();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// } else if (move_mode == 'r') { //鍙宠浆
-		// 	move_right();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// } else if (move_mode == 'w') { //鎽囨憜
-		// 	move_swing();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// } else if (move_mode == '5') { //绔嬫
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP1);
-		// 	Rbt_Init();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == 'q' && previous_mode != '0') { //璧疯韩
-		// 	Rbt_Init_Slow();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == 's' && previous_mode != 's') { //鍧愪笅
-		// 	Rbt_Init_Slow();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP2);
-		// 	move_stretch();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_miao);
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == 'j') { //浜ゆ浛鎶墜
-		// 	Rbt_Init();  // 琛ㄦ儏
-		// 	move_two_hands();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == 'y') { //浼告噿锟�?
-		// 	Rbt_Init_Slow();  // 琛ㄦ儏
-		// 	HAL_Delay(move_delay_slow);
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_happy);
-		// 	lan_yao();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP1);
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == '1') { //鎶ご
-		// 	Rbt_Init_Slow();  // 琛ㄦ儏
-		// 	HAL_Delay(move_delay);
-		// 	two_legs_down_in();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_tiao_pi);
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == '9') { //鎾呰厷
-		// 	Rbt_Init_Slow();  // 琛ㄦ儏
-		// 	HAL_Delay(move_delay);
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_mihu);
-		// 	butt_up();
-		// 	HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == 'p' && previous_mode != 'p') { //瓒翠笅鐫¤
-		// 	if (previous_mode != '5' && previous_mode != 'q') {
-		// 		Rbt_Init_Slow();
-		// 		HAL_Delay(move_delay_slow);
-		// 	}
-		// 	move_sleep_p();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_p);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if (move_mode == '2' && previous_mode != '2') { //鍗т笅鐫¤
-		// 	if (previous_mode != '5' && previous_mode != 'q') {
-		// 		Rbt_Init_Slow();
-		// 		HAL_Delay(move_delay_slow);
-		// 	}
-		// 	move_sleep_w();
-		// 	OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_w);
-		// 	previous_mode = move_mode;
-		// 	move_mode = '0';
-		// } else if ((HAL_GetTick() + 1000) - time_record > rest_time) {
-		// 	if(flag_tick == 1){
-		// 		HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, GPIO_PIN_SET);
-		// 		OLED_NewFrame();
-        //         OLED_ShowFrame();
-		// 		flag_tick = 0;
-		// 	}
+		if (move_mode == 'f') { //前进
+			move_forward();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'b') { //后退
+			move_behind();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'l') { //左转
+			move_left();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'r') { //右转
+			move_right();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == 'w') { //摇摆
+			move_swing();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+		} else if (move_mode == '5') { //立正
+			OLED_DrawBMP(0, 0, 128, 8, BMP1);
+			Rbt_Init();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'q' && previous_mode != '0') { //起身
+			Rbt_Init_Slow();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 's' && previous_mode != 's') { //坐下
+			Rbt_Init_Slow();
+			OLED_DrawBMP(0, 0, 128, 8, BMP2);
+			move_stretch();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_miao);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'j') { //交替抬手
+			Rbt_Init();  // 表情
+			move_two_hands();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'y') { //伸懒腰
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay_slow);
+			OLED_DrawBMP(0, 0, 128, 8, BMP_happy);
+			lan_yao();
+			OLED_DrawBMP(0, 0, 128, 8, BMP1);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '1') { //抬头
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay);
+			two_legs_down_in();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_tiao_pi);
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '9') { //撅腚
+			Rbt_Init_Slow();  // 表情
+			HAL_Delay(move_delay);
+			OLED_DrawBMP(0, 0, 128, 8, BMP_mihu);
+			butt_up();
+			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == 'p' && previous_mode != 'p') { //趴下睡觉
+			if (previous_mode != '5' && previous_mode != 'q') {
+				Rbt_Init_Slow();
+				HAL_Delay(move_delay_slow);
+			}
+			move_sleep_p();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_p);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if (move_mode == '2' && previous_mode != '2') { //卧下睡觉
+			if (previous_mode != '5' && previous_mode != 'q') {
+				Rbt_Init_Slow();
+				HAL_Delay(move_delay_slow);
+			}
+			move_sleep_w();
+			OLED_DrawBMP(0, 0, 128, 8, BMP_sleep_w);
+			previous_mode = move_mode;
+			move_mode = '0';
+		} else if ((HAL_GetTick() + 1000) - time_record > rest_time) {
+			if(flag_tick == 1){
+				HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, GPIO_PIN_SET);
+				OLED_NewFrame();
+				OLED_ShowFrame();
+				flag_tick = 0;
+			}
 
-		// }
+		}
+
+	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    }
   /* USER CODE END 3 */
 }
 
@@ -506,7 +508,7 @@ void move_stretch(void) {
 					__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(70+i));
 					HAL_Delay(move_speed);
 				}
-		// __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135)); // 鍙冲墠锟�? right front leg
+		// __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(135)); // 右前腿 right front leg
 		HAL_Delay(1000);
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(180));
 		HAL_Delay(500);
@@ -523,14 +525,14 @@ void move_stretch(void) {
 void move_sleep_w(void) {
 
 	for (uint8_t i = 0; i < 75; i++) {
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i)); // 15   鍙冲墠锟�? right front leg
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i)); // 165  宸﹀墠锟�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i)); // 15   右前腿 right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i)); // 165  左前腿 right front leg
 		HAL_Delay(move_speed);
 	}
 
 	for (uint8_t i = 0; i < 75; i++) {
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i)); // 165 鍙冲悗锟�? right front leg
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i)); // 15 宸﹀悗锟�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2,angle_to_CCR(90+i)); // 165 右后腿 right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4,angle_to_CCR(90-i)); // 15 左后腿 right front leg
 		HAL_Delay(move_speed);
 	}
 
@@ -538,8 +540,8 @@ void move_sleep_w(void) {
 
 void move_sleep_p(void) {
 	for (uint8_t i = 0; i < 75; i++) {
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i)); // 165 鍙冲墠锟�? right front leg
-		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i)); // 15 宸﹀墠锟�? right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i)); // 165 右前腿 right front leg
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i)); // 15 左前腿 right front leg
 		HAL_Delay(move_speed);
 	}
 	for (uint8_t i = 0; i < 75; i++) {
@@ -591,7 +593,7 @@ void move_two_hands(void) {
 
 }
 
-void butt_up(void) { //鎾呰厷
+void butt_up(void) { //撅腚
 	for (uint8_t i = 0; i < 75; i++) {
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90+i));
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90-i));
@@ -601,7 +603,7 @@ void butt_up(void) { //鎾呰厷
 	}
 }
 
-void two_legs_down_in(void) { // 鎶ご 锟�?
+void two_legs_down_in(void) { // 抬头 内
 	for (uint8_t i = 0; i < 20; i++) {
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1,angle_to_CCR(90-i));
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3,angle3_to_CCR(90+i));
