@@ -143,10 +143,10 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
     OLED_Init();
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); //前腿1
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); //前腿2
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); //右前腿
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2); //右后腿
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); //左前腿
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4); //左后腿
 	HAL_UART_Receive_IT(&huart1, &move_mode, 1); //
 	OLED_DrawBMP(0, 0, 128, 8, BMP1); //立正
     uint8_t i=0;
@@ -157,12 +157,18 @@ int main(void)
     while (1)
     {
 
-        if (i>=180) {
-            i=0;
-        }
-        __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, angle_to_CCR(i));
-		HAL_Delay(10000);
-        i++;
+        // if (i>=180) {
+        //     i=0;
+        // }
+        // __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, angle_to_CCR(i));
+		// HAL_Delay(1000);
+	    // __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, angle_to_CCR(i));
+		// HAL_Delay(1000);
+        // __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3, angle_to_CCR(i));
+		// HAL_Delay(1000);
+	    // __HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4, angle_to_CCR(i));
+		// HAL_Delay(1000);
+        // i = i+20;
 		//HAL_Delay(1);
 		// time_record_now = HAL_GetTick() + 1000;
 		if (move_mode == 'f') { //前进
@@ -319,11 +325,11 @@ uint8_t CCR_to_angle(uint16_t CCRR) {
 }
 
 uint16_t angle3_to_CCR(uint8_t angle) {
-	return angle * 2000 / 193 + 500;
+	return angle * 2000 / 180 + 600;
 }
 
 uint8_t CCR_to_angle3(uint16_t CCRR) {
-	return (CCRR - 500) * 193 / 2000;
+	return (CCRR - 600) * 180 / 2000;
 }
 
 void Rbt_Init(void) {
